@@ -89,73 +89,83 @@ function getUser(id) {
   return usersFromServer.find(user => user.id === id);
 }
 
+// 
 const preparedTodos = todosFromServer.map(todo => ({
   ...todo,
   user: getUser(todo.userId),
 }));
 
 export function App() {
-  const [todos, setTodos] = useState([]);
-  const [newTodoTitle, setNewTodoTitle] = useState('');
-  const [selectedUserId, setSelectedUserId] = useState(0);
+  const [todos, setTodos] = useState(preparedTodos);
 
-  useEffect(() => {
-    setTimeout(() => {
-      setTodos(preparedTodos);
-    }, 1000);
-  }, []);
-
-  function addTodo({ title, userId, completed = false }) {
-    const newTodo = {
-      id: Date.now(),
-      title,
-      userId,
-      completed,
-      user: getUser(userId),
-    };
-    
+  function addTodo(newTodo) {
     setTodos([...todos, newTodo])
+  }
+
+  function updateTodo(updatedTodo) {
+    setTodos(todos.map(todo => {
+      if (todo.id !== updatedTodo.id) {
+        return todo;
+      }
+
+      return updatedTodo
+    }))
   }
 
   return (
     <div className="App">
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
+      <TodoForm onSubmit={addTodo} />
+      <TodoList todos={todos} />
+      <TodoForm
+        todo={todos[0]}
+        onSubmit={updateTodo}
+      />
+    </div>
+  );
+}
 
-          addTodo({
-            title: newTodoTitle,
-            userId: selectedUserId,
-          });
+function TodoForm({ onSubmit, todo = null }) {
+  const [newTodoTitle, setNewTodoTitle] = useState(todo?.title || '');
+  const [selectedUserId, setSelectedUserId] = useState(todo?.userId || 0);
+
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+
+        onSubmit({
+          id: todo?.id || Date.now(),
+          title: newTodoTitle,
+          userId: selectedUserId,
+          completed: todo?.completed || false,
+          user: getUser(selectedUserId),
+        });
+      }}
+    >
+      <input
+        type="text"
+        value={newTodoTitle}
+        onChange={(event) => {
+          setNewTodoTitle(event.target.value);
+        }}
+      />
+
+      <select
+        value={selectedUserId}
+        onChange={(event) => {
+          setSelectedUserId(+event.target.value);
         }}
       >
-        <input
-          type="text"
-          value={newTodoTitle}
-          onChange={(event) => {
-            setNewTodoTitle(event.target.value);
-          }}
-        />
+        <option value="0">---</option>
+        {usersFromServer.map(user => (
+          <option key={user.id} value={user.id}>
+            {user.name}
+          </option>
+        ))}
+      </select>
 
-        <select
-          value={selectedUserId}
-          onChange={(event) => {
-            setSelectedUserId(+event.target.value);
-          }}
-        >
-          <option value="0">---</option>
-          {usersFromServer.map(user => (
-            <option key={user.id} value={user.id}>
-              {user.name}
-            </option>
-          ))}
-        </select>
-
-        <button>Add</button>
-      </form>
-
-      <TodoList todos={todos} />
-    </div>
+      <button>Add</button>
+    </form>
   );
 }
 
