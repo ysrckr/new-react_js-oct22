@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useState } from 'react';
 import './App.scss';
 import { getUser, TodoForm } from './components/TodoForm';
@@ -25,18 +26,38 @@ const todosFromServer: TodoWithoutUser[] = [
   },
 ];
 
-// 
-const preparedTodos: Todo[] = todosFromServer.map(todo => ({
-  ...todo,
-  user: getUser(todo.userId),
-}));
+let oldTodos: Todo[] = [];
+let oldDelete: (todo: Todo) => void = () => {};
 
 export function App() {
-  const [todos, setTodos] = useState(preparedTodos);
+  const [todos, setTodos] = useState<Todo[]>(() => {
+    return todosFromServer.map(todo => ({
+      ...todo,
+      user: getUser(todo.userId),
+    }))
+  });
+  const [query, setQuery] = useState('');
 
+  console.log(oldTodos, todos, oldTodos === todos);
+  oldTodos = todos;
+  
   function addTodo(newTodo: Todo) {
     setTodos([...todos, newTodo])
   }
+
+  const deleteTodo = useCallback(
+    (todoToDelete: Todo) => {
+      setTodos(todos.filter(
+        todo => todo.id !== todoToDelete.id,
+      ));
+    },
+
+    [todos],
+  );
+
+  console.log(oldDelete, deleteTodo, oldDelete === deleteTodo);
+  oldDelete = deleteTodo;
+  
 
   // function updateTodo(updatedTodo: Todo) {
   //   setTodos(todos.map(todo => {
@@ -50,8 +71,16 @@ export function App() {
 
   return (
     <div className="App">
+      <input
+        type="text"
+        value={query}
+        onChange={event => setQuery(event.target.value)}
+      />
       <TodoForm onSubmit={addTodo} />
-      <TodoList todos={todos} />
+      <TodoList
+        todos={todos}
+        onTodoDeleted={deleteTodo}
+      />
     </div>
   );
 }

@@ -114,7 +114,7 @@ export const TodoForm: React.FC<Props> = ({ onSubmit, todo }) => {
         ))}
       </select>
 
-      <button>Add</button>
+      <button>{todo ? 'Save' : 'Add'}</button>
     </form>
   );
 };

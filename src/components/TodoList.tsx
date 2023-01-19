@@ -1,19 +1,24 @@
+import React from 'react';
 import { Todo } from '../types/Todo';
+import { TodoInfo } from './TodoInfo';
 
-export const TodoList: React.FC<{ todos: Todo[]; }> = ({ todos }) => {
-  return (
-    <ul>
-      {todos.map(todo => (
-        <li
-          key={todo.id}
-        >
-          {todo.user?.name}
-          {': '}
-          {todo.title}
-          {' - '}
-          {todo.completed ? 'X' : '0'}
-        </li>
-      ))}
-    </ul>
-  );
+type Props = {
+  todos: Todo[];
+  onTodoDeleted: (todo: Todo) => void;
 };
+
+export const TodoList: React.FC<Props> = React.memo(
+  ({ todos, onTodoDeleted }) => {
+    return (
+      <div className="TodoList">
+        {todos.map(todo => (
+          <TodoInfo
+            key={todo.id}
+            todo={todo}
+            onDelete={onTodoDeleted}
+          />
+        ))}
+      </div>
+    );
+  },
+);
