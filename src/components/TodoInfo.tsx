@@ -4,28 +4,35 @@ import { Todo } from '../types/Todo';
 type Props = {
   todo: Todo;
   onDelete: (todo: Todo) => void;
+  select: (todo: Todo) => void;
+  edit: () => void;
 };
 
-export const TodoInfo: React.FC<Props> = ({ todo, onDelete }) => {
-    console.log('TodoInfo', todo.id);
+export const TodoInfo: React.FC<Props> = ({ todo, onDelete, select, edit }) => {
+  console.log('TodoInfo', todo.id);
 
-    return (
-      <div>
-        {todo.user?.name}
-        {': '}
-        {todo.title}
-        {' - '}
-        {todo.completed ? 'X' : '0'}
+  return (
+    <div>
+      {todo.user?.name}
+      {': '}
+      {todo.title}
+      {' - '}
+      {todo.completed ? 'X' : '0'}
 
-        <button onClick={() => {
+      <button
+        onClick={() => {
           onDelete(todo);
         }}>
-          x
-        </button>
+        x
+      </button>
 
-        <button onClick={() => {}}>
-          Edit
-        </button>
-      </div>
-    );
-  };
+      <button
+        onClick={() => {
+          edit();
+          select(todo);
+        }}>
+        Edit
+      </button>
+    </div>
+  );
+};

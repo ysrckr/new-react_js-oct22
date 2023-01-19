@@ -26,53 +26,51 @@ const todosFromServer: TodoWithoutUser[] = [
   },
 ];
 
-let oldTodos: Todo[] = [];
-let oldDelete: (todo: Todo) => void = () => {};
-
 export function App() {
   const [todos, setTodos] = useState<Todo[]>(() => {
     return todosFromServer.map(todo => ({
       ...todo,
       user: getUser(todo.userId),
-    }))
+    }));
   });
   const [query, setQuery] = useState('');
+  const [todoToUpdate, setTodoToUpdate] = useState<Todo>();
+  const [isEditing, setIsEditing] = useState(false);
 
-  console.log(oldTodos, todos, oldTodos === todos);
-  oldTodos = todos;
-  
+  const editTodo = () => {
+    setIsEditing(true);
+  };
+
+  const saveTodo = () => {
+    setIsEditing(false);
+  };
+
   function addTodo(newTodo: Todo) {
-    setTodos([...todos, newTodo])
+    setTodos([...todos, newTodo]);
   }
 
   const deleteTodo = useCallback(
     (todoToDelete: Todo) => {
-      setTodos(todos.filter(
-        todo => todo.id !== todoToDelete.id,
-      ));
+      setTodos(todos.filter(todo => todo.id !== todoToDelete.id));
     },
 
     [todos],
   );
 
-  console.log(oldDelete, deleteTodo, oldDelete === deleteTodo);
-  oldDelete = deleteTodo;
-  
+  const updateTodo = useCallback((todo: Todo) => {
+    setTodos(prev => [...prev, todo]);
 
-  // function updateTodo(updatedTodo: Todo) {
-  //   setTodos(todos.map(todo => {
-  //     if (todo.id !== updatedTodo.id) {
-  //       return todo;
-  //     }
+    saveTodo();
+  }, []);
 
-  //     return updatedTodo;
-  //   }));
-  // }
+  const selectTodoToUpdate = (todo: Todo) => {
+    setTodoToUpdate(todo);
+  };
 
   return (
-    <div className="App">
+    <div className='App'>
       <input
-        type="text"
+        type='text'
         value={query}
         onChange={event => setQuery(event.target.value)}
       />
@@ -80,9 +78,15 @@ export function App() {
       <TodoList
         todos={todos}
         onTodoDeleted={deleteTodo}
+        edit={editTodo}
+        selectTodo={selectTodoToUpdate}
       />
+      {isEditing && (
+        <TodoForm
+          onSubmit={updateTodo}
+          todo={todoToUpdate}
+        />
+      )}
     </div>
   );
 }
-
-
