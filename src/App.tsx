@@ -1,9 +1,10 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo, ChangeEvent } from 'react';
 import { useState } from 'react';
 import './App.scss';
 import { getUser, TodoForm } from './components/TodoForm';
 import { TodoList } from './components/TodoList';
 import { Todo, TodoWithoutUser } from './types/Todo';
+import { useDebounce } from './hooks/useDebounce';
 
 const todosFromServer: TodoWithoutUser[] = [
   {
@@ -36,6 +37,7 @@ export function App() {
   const [query, setQuery] = useState('');
   const [todoToUpdate, setTodoToUpdate] = useState<Todo>();
   const [isEditing, setIsEditing] = useState(false);
+  const debouncedQuery = useDebounce(query, 300);
 
   const editTodo = () => {
     setIsEditing(true);
@@ -67,16 +69,33 @@ export function App() {
     setTodoToUpdate(todo);
   };
 
+  const searchTodo = useCallback((todos: Todo[], query: string) => {
+    const cleanQuery = query.trim().toLocaleLowerCase();
+
+    return todos.filter(todo =>
+      todo.title.toLocaleLowerCase().includes(cleanQuery),
+    );
+  }, []);
+
+  const filteredTodos = useMemo(() => {
+    return searchTodo(todos, debouncedQuery);
+  }, [debouncedQuery, todos, searchTodo]);
+
+  const searchQueryHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    setQuery(event.target.value);
+  };
+
+
   return (
     <div className='App'>
       <input
         type='text'
         value={query}
-        onChange={event => setQuery(event.target.value)}
+        onChange={searchQueryHandler}
       />
       <TodoForm onSubmit={addTodo} />
       <TodoList
-        todos={todos}
+        todos={filteredTodos}
         onTodoDeleted={deleteTodo}
         edit={editTodo}
         selectTodo={selectTodoToUpdate}
