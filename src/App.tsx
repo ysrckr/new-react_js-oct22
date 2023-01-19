@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import './App.scss';
+import { Todo, TodoWithoutUser } from './types/Todo';
+import { User } from './types/User';
 
-const todosFromServer = [
+const todosFromServer: TodoWithoutUser[] = [
   {
     id: 1,
     title: 'delectus aut autem',
@@ -22,7 +24,7 @@ const todosFromServer = [
   },
 ];
 
-const usersFromServer = [
+const usersFromServer: User[] = [
   {
     id: 1,
     name: 'Leanne Graham',
@@ -85,12 +87,12 @@ const usersFromServer = [
   },
 ];
 
-function getUser(id) {
+function getUser(id: number) {
   return usersFromServer.find(user => user.id === id);
 }
 
 // 
-const preparedTodos = todosFromServer.map(todo => ({
+const preparedTodos: Todo[] = todosFromServer.map(todo => ({
   ...todo,
   user: getUser(todo.userId),
 }));
@@ -98,33 +100,34 @@ const preparedTodos = todosFromServer.map(todo => ({
 export function App() {
   const [todos, setTodos] = useState(preparedTodos);
 
-  function addTodo(newTodo) {
+  function addTodo(newTodo: Todo) {
     setTodos([...todos, newTodo])
   }
 
-  function updateTodo(updatedTodo) {
-    setTodos(todos.map(todo => {
-      if (todo.id !== updatedTodo.id) {
-        return todo;
-      }
+  // function updateTodo(updatedTodo: Todo) {
+  //   setTodos(todos.map(todo => {
+  //     if (todo.id !== updatedTodo.id) {
+  //       return todo;
+  //     }
 
-      return updatedTodo
-    }))
-  }
+  //     return updatedTodo;
+  //   }));
+  // }
 
   return (
     <div className="App">
       <TodoForm onSubmit={addTodo} />
       <TodoList todos={todos} />
-      <TodoForm
-        todo={todos[0]}
-        onSubmit={updateTodo}
-      />
     </div>
   );
 }
 
-function TodoForm({ onSubmit, todo = null }) {
+type TodoFormProps = {
+  onSubmit: (todo: Todo) => void,
+  todo?: Todo,
+}
+
+const TodoForm: React.FC<TodoFormProps> = ({ onSubmit, todo }) => {
   const [newTodoTitle, setNewTodoTitle] = useState(todo?.title || '');
   const [selectedUserId, setSelectedUserId] = useState(todo?.userId || 0);
 
@@ -169,14 +172,14 @@ function TodoForm({ onSubmit, todo = null }) {
   );
 }
 
-function TodoList({ todos }) {
+const TodoList: React.FC<{ todos: Todo[] }> = ({ todos }) => {
   return (
     <ul>
       {todos.map(todo => (
         <li
           key={todo.id}
         >
-          {todo.user.name}
+          {todo.user?.name}
           {': '}
           {todo.title}
           {' - '}
