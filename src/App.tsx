@@ -59,11 +59,13 @@ export function App() {
     [todos],
   );
 
-  const updateTodo = useCallback((todo: Todo) => {
-    setTodos(prev => [...prev, todo]);
+  const updateTodo = useCallback((todoToUpdate: Todo) => {
+    setTodos(
+      todos.map(todo => (todo.id === todoToUpdate.id ? todoToUpdate : todo)),
+    );
 
     saveTodo();
-  }, []);
+  }, [todos]);
 
   const selectTodoToUpdate = (todo: Todo) => {
     setTodoToUpdate(todo);
@@ -100,10 +102,17 @@ export function App() {
         selectTodo={selectTodoToUpdate}
       />
       {isEditing && (
-        <TodoForm
-          onSubmit={updateTodo}
-          todo={todoToUpdate}
-        />
+        <>
+          <TodoForm
+            onSubmit={updateTodo}
+            todo={todoToUpdate}
+          />
+          <button
+            type='button'
+            onClick={() => setIsEditing(false)}>
+            Cancel
+          </button>
+        </>
       )}
     </div>
   );
